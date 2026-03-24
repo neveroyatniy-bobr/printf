@@ -2,12 +2,12 @@
 #include <string.h>
 
 extern "C" {
-    void my_printf(const char* str);
+    void my_printf(const char* str, ...);
 }
 
 int main() {
-    const char* str = "huuuuuuuuuuuuuuuuuuuui\n";
-    my_printf(str);
+    const char* str = "%b huuuuuuuuuuuuuuuuuuuui\n";
+    my_printf(str, 5);
 
     return 0;
 }
