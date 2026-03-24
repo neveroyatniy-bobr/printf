@@ -36,8 +36,11 @@ my_printf:
         ;обработка числа, если число
         call print_n
 
-        ;обработка символа,если символ
+        ;обработка символа, если символ
         call print_c
+
+        ;обработка строки, если строка
+        call print_s
         
         jmp .loop
 
@@ -131,6 +134,30 @@ print_c:
     add farg, 8
 
     call putc
+
+    ret
+
+print_s:
+    cmp byte [fstr], 's'
+    je .str
+        ret
+    .str:
+    inc fstr
+
+    mov rbx, [farg]
+    
+    xor rdx, rdx
+    .loop_str:
+        cmp byte [rbx], 0
+        je .end_loop_str
+
+        mov dl, [rbx]
+        inc rbx
+
+        call putc
+
+        jmp .loop_str
+    .end_loop_str:
 
     ret
 
