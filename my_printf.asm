@@ -33,9 +33,11 @@ my_printf:
         jne .no_format
         inc fstr
 
-        ;парсинг числа, если число
-        
+        ;обработка числа, если число
         call print_n
+
+        ;обработка символа,если символ
+        call print_c
         
         jmp .loop
 
@@ -49,12 +51,8 @@ my_printf:
         jmp .loop
     .endloop:
     
-    ; Вызов write
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, buffer
-    mov rdx, buffer_ptr
-    syscall
+    ;дописываю остаток буффера
+    call print_buffer
 
     pop rax
     pop rdi
@@ -88,11 +86,8 @@ print_n:
         mov rbx, 16
         jmp .number
     .no_x:
-
-    ret
-    
+        ret
     .number:
-
     inc fstr
 
     xor rcx, rcx
@@ -118,11 +113,44 @@ print_n:
     
     .print_num_loop:
         pop rdx
-        mov [buffer + buffer_ptr], dl
-        inc buffer_ptr
+        call putc
         dec rcx
         cmp rcx, 0
         jne .print_num_loop
+
+    ret
+
+print_c:
+    cmp byte [fstr], 'c'
+    je .char
+        ret
+    .char:
+    inc fstr
+
+    mov rdx, [farg]
+    add farg, 8
+
+    call putc
+
+    ret
+
+putc:
+    cmp buffer_ptr, 1023
+    jne .no_buffer_limit
+        call print_buffer
+    .no_buffer_limit:
+
+    mov [buffer + buffer_ptr], dl
+    inc buffer_ptr
+
+    ret
+
+print_buffer:
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, buffer
+    mov rdx, buffer_ptr
+    syscall
 
     ret
 
