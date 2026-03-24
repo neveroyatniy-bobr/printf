@@ -6,8 +6,9 @@ extern "C" {
 }
 
 int main() {
-    const char* str = "%s lalalalalala\n";
-    my_printf(str, "shashasha");
+    const char* str = "%x lalalalalala\n";
+    long long x = -214213;
+    my_printf(str, x);
 
     return 0;
 }

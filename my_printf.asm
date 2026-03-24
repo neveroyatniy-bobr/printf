@@ -94,8 +94,17 @@ print_n:
     inc fstr
 
     xor rcx, rcx
+
     mov rax, [farg]
     add farg, 8
+
+    test eax, eax
+    jg .no_negative
+        mov dl, '-'
+        call putc
+        neg eax
+    .no_negative:
+
     .get_num_loop:
         mov rdx, 0
         div rbx
