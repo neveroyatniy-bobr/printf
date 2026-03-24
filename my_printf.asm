@@ -101,8 +101,14 @@ print_n:
     .get_num_loop:
         mov rdx, 0
         div rbx
-
-        add rdx, '0'
+        
+        cmp rdx, 10
+        jl .digit
+            add rdx, 'a' - 10
+            jmp .end_digit_if
+        .digit:
+            add rdx, '0'
+        .end_digit_if:
 
         push rdx
         inc rcx
