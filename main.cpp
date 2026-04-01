@@ -6,9 +6,7 @@ extern "C" {
 }
 
 int main() {
-    const char* str = "%x lalalalalala\n";
-    long long x = -214213;
-    my_printf(str, x);
+    my_printf("%o\n%d %s %x %d%c%b\n%d %s %x %d%c%b\n", -1, -1, "love", 3802, 100, 33, 127, -1, "love", 3802, 100, 33, 127);
 
     return 0;
 }

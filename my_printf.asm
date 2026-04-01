@@ -33,14 +33,11 @@ my_printf:
         jne .no_format
         inc fstr
 
-        ;обработка числа, если число
-        call print_n
+        xor rax, rax
+        mov al, [fstr]
+        inc fstr
 
-        ;обработка символа, если символ
-        call print_c
-
-        ;обработка строки, если строка
-        call print_s
+        call [jmp_table + (rax - 'b') * 8]
         
         jmp .loop
 
@@ -68,30 +65,19 @@ my_printf:
 
     ret
 
-print_n:
-    cmp byte [fstr], 'd'
-    jne .no_d
-        mov rbx, 10
-        jmp .number
-    .no_d:
-    cmp byte [fstr], 'b'
-    jne .no_b
-        mov rbx, 2
-        jmp .number
-    .no_b:
-    cmp byte [fstr], 'o'
-    jne .no_o
-        mov rbx, 8
-        jmp .number
-    .no_o:
-    cmp byte [fstr], 'x'
-    jne .no_x
-        mov rbx, 16
-        jmp .number
-    .no_x:
-        ret
-    .number:
-    inc fstr
+jmp_table:
+    dq print_b
+    dq print_c
+    dq print_d
+    times('o' - 'd' - 1) dq print_default
+    dq print_o
+    times('s' - 'o' - 1) dq print_default
+    dq print_s
+    times('x' - 's' - 1) dq print_default
+    dq print_x
+
+print_d:
+    mov rbx, 10
 
     xor rcx, rcx
 
@@ -108,6 +94,111 @@ print_n:
     .get_num_loop:
         mov rdx, 0
         div rbx
+        
+        add rdx, '0'
+
+        push rdx
+        inc rcx
+
+        cmp rax, 0
+        jne .get_num_loop
+    
+    .print_num_loop:
+        pop rdx
+        call putc
+        dec rcx
+        cmp rcx, 0
+        jne .print_num_loop
+
+    ret
+
+print_b:
+    xor rcx, rcx
+
+    mov rax, [farg]
+    add farg, 8
+
+    test eax, eax
+    jg .no_negative
+        mov dl, '-'
+        call putc
+        neg eax
+    .no_negative:
+
+    .get_num_loop:
+        mov rdx, rax
+        and rdx, 1
+        shr rax, 1
+        
+        add rdx, '0'
+
+        push rdx
+        inc rcx
+
+        cmp rax, 0
+        jne .get_num_loop
+    
+    .print_num_loop:
+        pop rdx
+        call putc
+        dec rcx
+        cmp rcx, 0
+        jne .print_num_loop
+
+    ret
+
+print_o:
+    xor rcx, rcx
+
+    mov rax, [farg]
+    add farg, 8
+
+    test eax, eax
+    jg .no_negative
+        mov dl, '-'
+        call putc
+        neg eax
+    .no_negative:
+
+    .get_num_loop:
+        mov rdx, rax
+        and rdx, 7
+        shr rax, 3
+        
+        add rdx, '0'
+
+        push rdx
+        inc rcx
+
+        cmp rax, 0
+        jne .get_num_loop
+    
+    .print_num_loop:
+        pop rdx
+        call putc
+        dec rcx
+        cmp rcx, 0
+        jne .print_num_loop
+
+    ret
+
+print_x:
+    xor rcx, rcx
+
+    mov rax, [farg]
+    add farg, 8
+
+    test eax, eax
+    jg .no_negative
+        mov dl, '-'
+        call putc
+        neg eax
+    .no_negative:
+
+    .get_num_loop:
+        mov rdx, rax
+        and rdx, 15
+        shr rax, 4
         
         cmp rdx, 10
         jl .digit
@@ -133,12 +224,6 @@ print_n:
     ret
 
 print_c:
-    cmp byte [fstr], 'c'
-    je .char
-        ret
-    .char:
-    inc fstr
-
     mov rdx, [farg]
     add farg, 8
 
@@ -147,13 +232,8 @@ print_c:
     ret
 
 print_s:
-    cmp byte [fstr], 's'
-    je .str
-        ret
-    .str:
-    inc fstr
-
     mov rbx, [farg]
+    add farg, 8
     
     xor rdx, rdx
     .loop_str:
@@ -188,6 +268,9 @@ print_buffer:
     mov rdx, buffer_ptr
     syscall
 
+    ret
+
+print_default:
     ret
 
 section .data
