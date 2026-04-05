@@ -37,7 +37,14 @@ my_printf:
         mov al, [fstr]
         inc fstr
 
-        call [jmp_table + (rax - 'b') * 8]
+        cmp rax, '%'
+        je .printprocent
+            call [jmp_table + (rax - 'b') * 8]
+        jmp .endifprocent
+        .printprocent:
+            mov dl, '%'
+            call putc
+        .endifprocent:
         
         jmp .loop
 
